@@ -10,11 +10,67 @@
 
 @implementation AppDelegate
 
+@synthesize databaseName, databasePath;
+
+
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    // Override point for customization after application launch.
+    
+    
+    
+    
+    
+    // Ruta para la base de datos. Estará en Library que es privada, ya que Documents se comparte con el usuario mediante iTunes.
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    
+    // Añadimos el nombre del fichero de base de datos.
+    self.databasePath = [documentsDirectory stringByAppendingPathComponent:@"peliculas.sqlite"];
+    
+    // Cargo la base de datos
+    [self loadDB];
+    
+    
     return YES;
 }
+
+
+
+-(void)loadDB
+{
+    BOOL exito;
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    NSError *error;
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+    
+    NSString *libraryDirectory = [paths objectAtIndex:0];
+    
+    NSString *writableDBPath = [libraryDirectory stringByAppendingPathComponent:@"peliculas.sqlite"];
+    
+    exito = [fileManager fileExistsAtPath:writableDBPath];
+    
+    if (exito) return;
+    
+    // Si no existe en Library, la copio desde el original.
+    NSString *defaultDBPath = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"peliculas.sqlite"];
+    
+    exito = [fileManager copyItemAtPath:defaultDBPath toPath:writableDBPath error: &error];
+    
+    
+    if (!exito) {
+        NSAssert1(0, @"Error al cargar la base de datos, error = '%@'.", [error localizedDescription]);
+    }
+    
+}
+
+
+
+
+
 							
 - (void)applicationWillResignActive:(UIApplication *)application
 {
